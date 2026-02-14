@@ -125,44 +125,49 @@ PORT=5000
 MONGO_URI=mongodb://localhost:27017/resolvenow
 ```
 
-## API Endpoints
-- Base URL: http://localhost:5000
+## API
+Base URL: http://localhost:5000  
+Auth header (where required): Authorization: Bearer <token>
 
 - Auth
-  - POST /api/auth/register
-  - POST /api/auth/login
-  - POST /api/auth/logout
-  - GET  /api/auth/agents
-
-- Users
-  - GET  /api/users/profile           (auth)
-  - PUT  /api/users/profile           (auth)
+  - POST /api/auth/register — create user (name, email, password, phone, userType)
+  - POST /api/auth/login — returns { token, user }
+  - POST /api/auth/logout — invalidate client session
+  - GET  /api/auth/agents — list agents with activeAssignments
 
 - Complaints
-  - POST /api/complaints              (auth, multipart form-data: attachments[])
-  - GET  /api/complaints              (auth)
-  - GET  /api/complaints/:id          (auth)
-  - PUT  /api/complaints/:id          (auth)
-  - DELETE /api/complaints/:id        (auth)
+  - POST /api/complaints — create complaint (multipart/form-data)
+    - fields: userId, name, address, city, state, pincode, comment
+    - files: attachments[]; optional attachmentNames[]
+  - GET  /api/complaints — list all (populates userId, assignment)
+  - GET  /api/complaints/:id — get by id
+  - PUT  /api/complaints/:id — update complaint
+  - DELETE /api/complaints/:id — remove complaint
 
 - Assignments
-  - POST /api/assigned                (auth)
-  - GET  /api/assigned                (auth)
-  - GET  /api/assigned/agent/:agentId (auth)
+  - POST /api/assigned — assign complaint to agent (complaintId, agentId, agentName)
+  - GET  /api/assigned — list all assignments
+  - GET  /api/assigned/agent/:agentId — list assignments for an agent (populated)
 
 - Messages
-  - POST /api/messages                (multipart form-data: attachments[])
-  - GET  /api/messages/:complaintId   (auth)
-  - PUT  /api/messages/read/:complaintId (auth)
-  - GET  /api/messages/unread/counts  (auth)
+  - POST /api/messages — send message (multipart/form-data: attachments[])
+    - body: complaintId, name, message
+  - GET  /api/messages/:complaintId — fetch conversation (sorted by sentAt)
+  - PUT  /api/messages/read/:complaintId — mark as read (for messages not sent by current user)
+  - GET  /api/messages/unread/counts — unread counts per complaint
 
 - Feedback
-  - POST /api/feedback                (auth)
-  - GET  /api/feedback/complaint/:complaintId (auth)
-  - GET  /api/feedback/agent/:agentId (auth)
+  - POST /api/feedback — create feedback (complaintId, rating, comment)
+  - GET  /api/feedback/complaint/:complaintId — fetch single complaint feedback
+  - GET  /api/feedback/agent/:agentId — feedbacks for an agent
 
-- Static Files
-  - GET  /uploads/<file>              (serves uploaded attachments)
+- Users
+  - GET  /api/users/profile — current user profile
+  - PUT  /api/users/profile — update profile (name, email, phone)
+  - GET  /api/users — list users (admin only)
+
+- Static uploads
+  - GET  /uploads/<filename> — serves uploaded files
 
 ## How It Works
 - Customer submits a complaint → Admin assigns to an agent → Agent updates status → Customer chats and gives feedback.

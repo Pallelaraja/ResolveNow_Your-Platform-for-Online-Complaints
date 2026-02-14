@@ -251,7 +251,7 @@ Bridge the gap between the UI and backend data:
 On completing the development part, we then run the application one last time to verify all the functionalities and look for any bugs in it. The user interface of the application looks a bit like the one’s provided below.
 
 ### 1. Landing Page
-![Uploading image.png…]()
+<img width="1906" height="869" alt="image" src="https://github.com/user-attachments/assets/7939aa36-4f5c-4138-9728-d04b3b7f714d" />
 
 
 ### 2. Login Page

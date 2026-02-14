@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Complaint = require('../models/Complaint');
+const Assigned = require('../models/Assigned');
 const auth = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
@@ -66,7 +67,9 @@ router.post('/', auth, upload.array('attachments', 10), async (req, res) => {
 // Get All Complaints
 router.get('/', auth, async (req, res) => {
     try {
-        const complaints = await Complaint.find().populate('userId', 'name email');
+        const complaints = await Complaint.find()
+            .populate('userId', 'name email')
+            .populate('assignment', 'agentName agentId');
         res.json(complaints);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -76,7 +79,9 @@ router.get('/', auth, async (req, res) => {
 // Get Single Complaint
 router.get('/:id', auth, async (req, res) => {
     try {
-        const complaint = await Complaint.findById(req.params.id);
+        const complaint = await Complaint.findById(req.params.id)
+            .populate('userId', 'name email')
+            .populate('assignment', 'agentName agentId');
         if (!complaint) return res.status(404).json({ error: 'Complaint not found' });
         res.json(complaint);
     } catch (err) {

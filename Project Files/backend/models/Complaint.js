@@ -15,6 +15,17 @@ const ComplaintSchema = new mongoose.Schema({
     }],
     status: { type: String, default: 'Pending' },
     createdAt: { type: Date, default: Date.now }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual for assignment
+ComplaintSchema.virtual('assignment', {
+    ref: 'Assigned',
+    localField: '_id',
+    foreignField: 'complaintId',
+    justOne: true
 });
 
 module.exports = mongoose.model('Complaint', ComplaintSchema);

@@ -84,7 +84,7 @@ const Complaint = ({ user, onSuccess }) => {
             } 
         }
       );
-      setMessage('Complaint registered successfully!');
+      setMessage('Complaint submitted successfully!');
       
       // Reset form but keep name
       setFormData({ 
@@ -104,7 +104,7 @@ const Complaint = ({ user, onSuccess }) => {
         }, 1500);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to register complaint.');
+      setError(err.response?.data?.error || 'Failed to submit complaint.');
     }
   };
 
@@ -349,7 +349,7 @@ const Complaint = ({ user, onSuccess }) => {
                     e.target.style.boxShadow = '0 4px 15px rgba(52, 152, 219, 0.3)';
                 }}
             >
-                Register Complaint
+                Submit Complaint
             </button>
          </div>
        </form>

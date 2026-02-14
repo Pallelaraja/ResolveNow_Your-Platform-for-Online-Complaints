@@ -175,8 +175,24 @@ const Status = ({ user, targetComplaintId }) => {
         const userComplaints = response.data
             .filter(c => c.userId === user.id || c.userId._id === user.id)
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        setComplaints(userComplaints);
+        try {
+            const assignsRes = await axios.get('http://localhost:5000/api/assigned', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const assignMap = {};
+            assignsRes.data.forEach(a => {
+                const cid = (a.complaintId && a.complaintId._id) ? a.complaintId._id : a.complaintId;
+                assignMap[cid] = a;
+            });
+            const merged = userComplaints.map(c => {
+                if (c.assignment && c.assignment.agentName) return c;
+                const a = assignMap[c._id];
+                return a ? { ...c, assignment: { agentName: a.agentName, agentId: a.agentId } } : c;
+            });
+            setComplaints(merged);
+        } catch {
+            setComplaints(userComplaints);
+        }
 
         // Fetch feedbacks for these complaints
         const feedbacksMap = {};
@@ -259,7 +275,7 @@ const Status = ({ user, targetComplaintId }) => {
   if (loading) return <div>Loading...</div>;
 
   if (complaints.length === 0) {
-    return <div style={{ padding: '1rem', textAlign: 'center', color: '#666', fontSize: '1.2rem' }}>No complaints registered yet.</div>;
+    return <div style={{ padding: '1rem', textAlign: 'center', color: '#666', fontSize: '1.2rem' }}>No complaints submitted yet.</div>;
   }
 
   return (
@@ -309,6 +325,12 @@ const Status = ({ user, targetComplaintId }) => {
             <div><strong>Date:</strong> {new Date(complaint.createdAt).toLocaleDateString()}</div>
             <div><strong>City:</strong> {complaint.city}</div>
             <div><strong>Description:</strong> {complaint.comment}</div>
+            
+            {complaint.assignment && (
+                <div style={{ marginTop: '0.2rem', color: '#2c3e50' }}>
+                    <strong>Agent:</strong> {complaint.assignment.agentName}
+                </div>
+            )}
             
             {(complaint.attachments?.length > 0 || complaint.attachment) && (
                 <div style={{ marginTop: '0.5rem' }}>

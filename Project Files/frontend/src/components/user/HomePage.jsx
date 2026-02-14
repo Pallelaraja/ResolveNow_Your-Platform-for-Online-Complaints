@@ -42,7 +42,24 @@ const HomePage = () => {
             
             const ids = new Set(filtered.map(c => c._id));
             setUserComplaintIds(ids);
-            setUserComplaints(filtered);
+            try {
+                const assignsRes = await axios.get('http://localhost:5000/api/assigned', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const map = {};
+                assignsRes.data.forEach(a => {
+                    const cid = (a.complaintId && a.complaintId._id) ? a.complaintId._id : a.complaintId;
+                    map[cid] = a;
+                });
+                const merged = filtered.map(c => {
+                    if (c.assignment && c.assignment.agentName) return c;
+                    const a = map[c._id];
+                    return a ? { ...c, assignment: { agentName: a.agentName, agentId: a.agentId } } : c;
+                });
+                setUserComplaints(merged);
+            } catch {
+                setUserComplaints(filtered);
+            }
         } catch (err) {
             console.error(err);
             // Auto-logout on auth error
@@ -116,7 +133,7 @@ const HomePage = () => {
                             borderBottom: activeTab === 'register' ? '2px solid #3498db' : '2px solid transparent'
                         }}
                     >
-                        Complaint Register
+                        Submit Complaint
                     </button>
                     <button 
                         onClick={() => setActiveTab('status')}
@@ -131,7 +148,7 @@ const HomePage = () => {
                             borderBottom: activeTab === 'status' ? '2px solid #3498db' : '2px solid transparent'
                         }}
                     >
-                        Status
+                        My Complaints
                     </button>
                 </div>
             </div>
@@ -146,7 +163,7 @@ const HomePage = () => {
         <div style={{ flex: 1, padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
             {activeTab === 'register' ? (
                 <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                    <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem', color: '#2c3e50' }}>Register Complaint</h2>
+                    <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1.5rem', color: '#2c3e50' }}>Submit Complaint</h2>
                     {!showForm ? (
                         <div style={{ textAlign: 'center', padding: '2rem' }}>
                             <button 
@@ -165,7 +182,7 @@ const HomePage = () => {
                                 onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
                                 onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
                             >
-                                Register New Complaint
+                                Submit Complaint
                             </button>
 
                             {/* Notifications */}
@@ -243,6 +260,11 @@ const HomePage = () => {
                                             >
                                                 <div>
                                                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', color: '#2c3e50' }}>{complaint.name}</div>
+                                                    {complaint.assignment && (
+                                                        <div style={{ fontSize: '0.8rem', color: '#34495e', marginTop: '0.1rem' }}>
+                                                            <strong>Agent:</strong> {complaint.assignment.agentName}
+                                                        </div>
+                                                    )}
                                                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.2rem' }}>
                                                         <span style={{ color: '#7f8c8d', fontSize: '0.85rem' }}>{new Date(complaint.createdAt).toLocaleDateString()}</span>
                                                         <span style={{ color: '#bdc3c7' }}>•</span>

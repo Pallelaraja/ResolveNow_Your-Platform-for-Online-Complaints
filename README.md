@@ -66,15 +66,24 @@ Scenario: John, a customer, recently encountered a problem with a product he pur
 
 ## TECHNICAL ARCHITECTURE
 
-The technical architecture of our online complaint registration and management app follows a client-server model, where the frontend serves as the client and the backend acts as the server. The frontend encompasses not only the user interface and presentation but also incorporates the axios library to connect with backend easily by using RESTful Apis.
+The technical architecture of **ResolveNow** follows a client-server model. The frontend acts as the client, built with **React.js** and **Vite**, while the backend serves as the API server using **Node.js** and **Express.js**.
 
-The frontend utilizes the bootstrap and material UI library to establish real-time and better UI experience for any user whether it is agent, admin or ordinary user working on it.
+### Frontend
+- **React.js**: For building a dynamic and responsive user interface.
+- **Vite**: Modern build tool for faster development.
+- **Axios**: For handling RESTful API requests to the backend.
+- **Socket.io-Client**: Enables real-time communication for the built-in messaging system.
+- **Material UI & Bootstrap**: Used for creating a consistent, modern, and accessible UI.
 
-On the backend side, we employ Express.js frameworks to handle the server-side logic and communication.
+### Backend
+- **Node.js & Express.js**: Handles server-side logic, routing, and middleware.
+- **Socket.io**: Powers real-time updates and customer-agent chat.
+- **JWT (JSON Web Tokens)**: Secure user authentication and authorization.
+- **Multer**: Middleware for handling multi-part form data and file uploads (attachments).
+- **Mongoose**: Provides a schema-based solution to model application data.
 
-For data storage and retrieval, our backend relies on MongoDB. MongoDB allows for efficient and scalable storage of user data, including user profiles, for complaints registration, etc. It ensures reliable and quick access to the necessary information during registration of user or any complaints.
-
-Together, the frontend and backend components, along with Express.js and MongoDB, form a comprehensive technical architecture for our complaint management app. This architecture enables efficient data exchange and seamless integration, ensuring a smooth experience for all users.
+### Database
+- **MongoDB**: NoSQL database for flexible and scalable data storage. Stores user profiles, complaint details, chat history, and feedback.
 
 ## PRE-REQUISITES
 
@@ -115,30 +124,39 @@ Follow these steps to run the **ResolveNow** project on your local machine:
 ### 1. Clone the Repository
 Open your terminal and execute:
 ```bash
-git clone https://github.com/awdhesh-student/complaint-registery.git
+git clone https://github.com/lovaraju37/ResolveNow_Your-Platform-for-Online-Complaints.git
 ```
 
 ### 2. Install Dependencies
 Navigate into the project directory and install dependencies for both frontend and backend:
 ```bash
 # Navigate to the project root
-cd complaint-registery
-
-# Install frontend dependencies
-cd frontend
-npm install
+cd ResolveNow_Your-Platform-for-Online-Complaints
 
 # Install backend dependencies
-cd ../backend
+cd "Project Files/backend"
+npm install
+
+# Install frontend dependencies
+cd "../frontend"
 npm install
 ```
 
-### 3. Start the Development Server
-From the `backend` directory, run:
+### 3. Start the Application
+You will need two terminal windows:
+
+**Terminal 1 (Backend):**
 ```bash
+cd "Project Files/backend"
 npm start
 ```
-The application will be accessible at [http://localhost:3000](http://localhost:3000).
+
+**Terminal 2 (Frontend):**
+```bash
+cd "Project Files/frontend"
+npm start
+```
+The application will be accessible at [http://localhost:5173](http://localhost:5173) (default Vite port).
 
 You have successfully installed and set up the ResolveNow app on your local machine. You can now proceed with further customization, development, and testing.
 
@@ -173,75 +191,76 @@ You have successfully installed and set up the ResolveNow app on your local mach
 **Duration**: 1 Hr
 
 ### 1. Set Up Project Structure
-- Create a new directory and initialize the project using `npm init`.
-- Install necessary dependencies: `Express.js`, `Mongoose`, `dotenv`, `cors`, etc.
+- Initialize the project using `npm init`.
+- Install core dependencies: `express`, `mongoose`, `jsonwebtoken`, `socket.io`, `multer`, `cors`, `dotenv`.
 
-### 2. Create Express.js Server
-- Set up an Express server to handle HTTP requests and serve API endpoints.
-- Configure middleware like `body-parser` for parsing request bodies and `cors` for cross-origin requests.
+### 2. Create Express.js & Socket.io Server
+- Set up an Express server to handle HTTP requests.
+- Integrate **Socket.io** for real-time bidirectional communication.
+- Configure middleware: `body-parser` for JSON/URL-encoded data, `cors` for cross-origin requests, and `express.static` for serving uploaded files.
 
 ### 3. Define API Routes
-- Create separate route files for functionalities such as authentication, complaints, and user management.
-- Implement route handlers to interact with the database and return responses.
+- Implement RESTful routes for:
+  - **Auth**: User registration, login, and profile management.
+  - **Complaints**: Submission, tracking, and status updates.
+  - **Assigned**: Admin functionality for assigning complaints to agents.
+  - **Messages**: Fetching chat history and handling real-time messaging.
+  - **Feedback**: Submitting user ratings and comments.
 
-### 4. Implement Data Models
-- Define Mongoose schemas for entities: `User`, `Complaint`, `Agent`, etc.
-- Create Mongoose models to interact with the MongoDB database.
-- Implement CRUD (Create, Read, Update, Delete) operations for each model.
+### 4. Implement Data Models & File Uploads
+- Define Mongoose schemas for all entities (User, Complaint, Assigned, Message, Feedback).
+- Configure **Multer** for handling file uploads (images/documents) attached to complaints and messages.
 
-### 5. User Authentication
-- Implement authentication using **JSON Web Tokens (JWT)**.
-- Create routes and middleware for registration, login, and logout.
-- Protect sensitive routes with authentication middleware.
-
-### 6. Admin Functionality
-- Implement routes and controllers for admin-specific tasks like assigning complaints and managing users/agents.
-
-### 7. Error Handling
-- Implement centralized error-handling middleware to catch and process errors during API requests.
-- Return appropriate HTTP status codes and clear error messages.
+### 5. Real-time Communication
+- Implement Socket.io events for real-time chat between customers and agents.
+- Ensure messages are persisted in MongoDB while being broadcast to connected users.
 
 ## DATABASE DEVELOPMENT
 **Duration**: 1 Hr
 
 ### 1. User Schema
-Defines the structure of user data stored in the `user_Schema` collection.
-- **Fields**: `name`, `email`, `password`, `phone`, `userType` (customer, agent, admin).
-- **Requirement**: All fields are mandatory for registration.
+Defines the structure of user data stored in the `User` collection.
+- **Fields**: `name`, `email`, `password`, `phone`, `userType` (Customer, Agent, Admin).
+- **Default**: `userType` defaults to `Customer`.
 
 ### 2. Complaint Schema
-Specifies the format of complaint data stored in the `complaint_schema` collection.
-- **Fields**: `userId`, `name`, `address`, `city`, `state`, `pincode`, `comment`, `status`.
-- **Relational Link**: Associated with a specific user via the `userId` field.
+Specifies the format of complaint data stored in the `Complaint` collection.
+- **Fields**: `userId` (ref User), `name`, `address`, `city`, `state`, `pincode`, `comment`, `attachments` (array of objects with path and names), `status`, `createdAt`.
+- **Status Options**: `Pending` (default), `Assigned`, `Resolved`.
 
 ### 3. Assigned Complaint Schema
-Defines how complaints are assigned to agents in the `assigned_complaint` collection.
-- **Fields**: `agentId`, `complaintId`, `status`, `agentName`.
-- **Relational Link**: Links a specific agent (`agentId`) to a specific complaint (`complaintId`).
+Defines how complaints are assigned to agents in the `Assigned` collection.
+- **Fields**: `agentId` (ref User), `complaintId` (ref Complaint), `agentName`, `status`, `assignedAt`.
+- **Constraint**: `complaintId` is unique to ensure a complaint is assigned to only one agent.
 
-### 4. Chat Window Schema
-Governs the structure of messages exchanged in the `message` collection.
-- **Fields**: `name`, `message`, `complaintId`.
-- **Relational Link**: Messages are associated with a specific complaint via `complaintId` for chat history tracking.
+### 4. Message Schema
+Governs the structure of real-time messages in the `Message` collection.
+- **Fields**: `complaintId` (ref Complaint), `name` (sender name), `message`, `attachments` (array of objects), `read` (boolean), `sentAt`.
+
+### 5. Feedback Schema
+Stores user feedback on resolved complaints in the `Feedback` collection.
+- **Fields**: `userId` (ref User), `complaintId` (ref Complaint), `agentId` (ref User), `rating` (1-5), `comment`, `createdAt`.
 
 ## FRONTEND DEVELOPMENT
 **Duration**: 1 Hr
 
 ### 1. Setup React Application
-The frontend foundation is built using **React.js**.
-- Initialize the application structure and organize project files.
-- Install essential libraries like `axios`, `react-router-dom`, `Bootstrap`, and `Material UI`.
+The frontend foundation is built using **React.js** and **Vite**.
+- Initialize the application using Vite for a high-performance build process.
+- Install essential libraries: `axios`, `react-router-dom`, `socket.io-client`, `bootstrap`, and `@mui/material`.
 
 ### 2. Design UI Components
-Create reusable components for a consistent and intuitive user experience:
-- **Navigation**: Integrated system for exploring sections like complaint submission and management.
-- **Interactive Elements**: Buttons, forms, and profiles.
-- **Layout & Styling**: Implementing a modern, visually appealing look using CSS and UI libraries.
+Create reusable and responsive components:
+- **Navigation**: Persistent navbar with dynamic links based on user roles.
+- **Dashboards**: Specific views for Customers, Agents, and Admins.
+- **Chat Window**: Real-time interface for messaging between customers and agents.
+- **Forms**: User-friendly forms for registration, login, and complaint submission (with file upload support).
 
 ### 3. Implement Frontend Logic
-Bridge the gap between the UI and backend data:
-- **API Integration**: Connect to backend endpoints using `axios`.
-- **Data Binding**: Ensure real-time updates and dynamic content rendering across the application.
+- **State Management**: Using React hooks (`useState`, `useEffect`) to manage user sessions and data.
+- **API Integration**: Centralized axios calls for backend communication.
+- **Real-time Updates**: Using `socket.io-client` to listen for new messages and status changes.
+- **Authentication**: Implementing private routes and role-based access control (RBAC).
 
 ## PROJECT IMPLEMENTATION
 **Duration**: 1 Hr

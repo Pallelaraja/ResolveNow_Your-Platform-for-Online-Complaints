@@ -125,9 +125,44 @@ PORT=5000
 MONGO_URI=mongodb://localhost:27017/resolvenow
 ```
 
-## API
-Clean REST endpoints for auth, complaints, assignments, messages, and feedback.  
-Browse the backend `routes/` for details.
+## API Endpoints
+- Base URL: http://localhost:5000
+
+- Auth
+  - POST /api/auth/register
+  - POST /api/auth/login
+  - POST /api/auth/logout
+  - GET  /api/auth/agents
+
+- Users
+  - GET  /api/users/profile           (auth)
+  - PUT  /api/users/profile           (auth)
+
+- Complaints
+  - POST /api/complaints              (auth, multipart form-data: attachments[])
+  - GET  /api/complaints              (auth)
+  - GET  /api/complaints/:id          (auth)
+  - PUT  /api/complaints/:id          (auth)
+  - DELETE /api/complaints/:id        (auth)
+
+- Assignments
+  - POST /api/assigned                (auth)
+  - GET  /api/assigned                (auth)
+  - GET  /api/assigned/agent/:agentId (auth)
+
+- Messages
+  - POST /api/messages                (multipart form-data: attachments[])
+  - GET  /api/messages/:complaintId   (auth)
+  - PUT  /api/messages/read/:complaintId (auth)
+  - GET  /api/messages/unread/counts  (auth)
+
+- Feedback
+  - POST /api/feedback                (auth)
+  - GET  /api/feedback/complaint/:complaintId (auth)
+  - GET  /api/feedback/agent/:agentId (auth)
+
+- Static Files
+  - GET  /uploads/<file>              (serves uploaded attachments)
 
 ## How It Works
 - Customer submits a complaint → Admin assigns to an agent → Agent updates status → Customer chats and gives feedback.

@@ -85,6 +85,27 @@ The technical architecture of **ResolveNow** follows a client-server model. The 
 ### Database
 - **MongoDB**: NoSQL database for flexible and scalable data storage. Stores user profiles, complaint details, chat history, and feedback.
 
+## PROJECT STRUCTURE
+
+The project is organized into two main directories: `backend` and `frontend`, located within the `Project Files` folder.
+
+### Backend (`Project Files/backend`)
+- **config.js**: Configuration for database connection and environment variables.
+- **models/**: Mongoose schemas and models (User, Complaint, Assigned, Message, Feedback).
+- **routes/**: API route definitions for authentication, complaints, and real-time messaging.
+- **middleware/**: Custom middleware for authentication and centralized error handling.
+- **uploads/**: Storage for complaint attachments and chat images.
+- **index.js**: The entry point for the Express server.
+
+### Frontend (`Project Files/frontend`)
+- **src/**:
+  - **components/**: Reusable UI components for dashboards, forms, and chat.
+  - **App.jsx**: The main component managing application routing.
+  - **main.jsx**: The entry point for the React application.
+  - **index.css**: Global styles and shared layout definitions.
+- **public/**: Static assets like logos and icons.
+- **vite.config.js**: Configuration for the Vite build tool.
+
 ## PRE-REQUISITES
 
 Here are the key prerequisites for developing a full-stack application using Node.js, Express.js, MongoDB, and React.js:
@@ -158,6 +179,38 @@ npm start
 ```
 The application will be accessible at [http://localhost:5173](http://localhost:5173) (default Vite port).
 
+## ENVIRONMENT VARIABLES
+
+To run the backend, you may need to configure the following variables in a `.env` file within the `Project Files/backend` directory:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/resolvenow
+```
+
+## API DOCUMENTATION
+
+The backend provides a set of RESTful endpoints to manage the application:
+
+### Authentication
+- `POST /api/auth/register`: Register a new user (Customer/Agent/Admin).
+- `POST /api/auth/login`: Authenticate a user and receive a JWT.
+
+### Complaints
+- `POST /api/complaints`: Submit a new complaint (with file attachments).
+- `GET /api/complaints/user/:userId`: Fetch all complaints submitted by a specific user.
+- `GET /api/complaints/:id`: Get detailed information about a single complaint.
+- `PATCH /api/complaints/:id/status`: Update the status of a complaint.
+
+### Admin & Assignments
+- `GET /api/users/agents`: List all available agents.
+- `POST /api/assigned`: Assign a complaint to a specific agent.
+- `GET /api/assigned/agent/:agentId`: Fetch complaints assigned to an agent.
+
+### Messaging & Feedback
+- `GET /api/messages/:complaintId`: Retrieve chat history for a complaint.
+- `POST /api/feedback`: Submit user feedback and ratings for a resolved complaint.
+
 You have successfully installed and set up the ResolveNow app on your local machine. You can now proceed with further customization, development, and testing.
 
 ## APPLICATION FLOW
@@ -188,7 +241,6 @@ You have successfully installed and set up the ResolveNow app on your local mach
 4. **Continuous Improvement**: Implement measures to improve functionality, security, and user experience.
 
 ## PROJECT FLOW - BACKEND DEVELOPMENT
-**Duration**: 1 Hr
 
 ### 1. Set Up Project Structure
 - Initialize the project using `npm init`.
@@ -216,7 +268,6 @@ You have successfully installed and set up the ResolveNow app on your local mach
 - Ensure messages are persisted in MongoDB while being broadcast to connected users.
 
 ## DATABASE DEVELOPMENT
-**Duration**: 1 Hr
 
 ### 1. User Schema
 Defines the structure of user data stored in the `User` collection.
@@ -242,7 +293,6 @@ Stores user feedback on resolved complaints in the `Feedback` collection.
 - **Fields**: `userId` (ref User), `complaintId` (ref Complaint), `agentId` (ref User), `rating` (1-5), `comment`, `createdAt`.
 
 ## FRONTEND DEVELOPMENT
-**Duration**: 1 Hr
 
 ### 1. Setup React Application
 The frontend foundation is built using **React.js** and **Vite**.
@@ -263,14 +313,14 @@ Create reusable and responsive components:
 - **Authentication**: Implementing private routes and role-based access control (RBAC).
 
 ## PROJECT IMPLEMENTATION
-**Duration**: 1 Hr
 
 **Skill Tags**: Testing, Verification, Bug Fixing, UI/UX Review
 
 On completing the development part, we then run the application one last time to verify all the functionalities and look for any bugs in it. The user interface of the application looks a bit like the one’s provided below.
 
 ### 1. Landing Page
-![Landing Page](Project%20Files/backend/uploads/landing-page.png)
+<img width="1906" height="869" alt="image" src="https://github.com/user-attachments/assets/7939aa36-4f5c-4138-9728-d04b3b7f714d" />
+
 
 ### 2. Login Page
 ![Login Page](Project%20Files/backend/uploads/login-page.png)

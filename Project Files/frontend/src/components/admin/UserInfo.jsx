@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 import { Snackbar, Alert, Rating } from '@mui/material';
 
 const UserInfo = ({ onAssignmentChange }) => {
@@ -57,6 +58,20 @@ const UserInfo = ({ onAssignmentChange }) => {
 
         fetchData();
     }, [refreshKey]);
+
+    useEffect(() => {
+        const socket = io('http://localhost:5000');
+
+        const bumpRefresh = () => {
+            setRefreshKey(prev => prev + 1);
+        };
+
+        socket.on('complaintCreated', bumpRefresh);
+        socket.on('complaintUpdated', bumpRefresh);
+        socket.on('complaintDeleted', bumpRefresh);
+
+        return () => socket.disconnect();
+    }, []);
 
     useEffect(() => {
         const fetchFeedbacks = async () => {

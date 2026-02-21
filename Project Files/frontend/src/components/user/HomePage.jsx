@@ -35,9 +35,14 @@ const HomePage = () => {
             const response = await axios.get('http://localhost:5000/api/complaints', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            // Filter for current user
             const filtered = response.data
-                .filter(c => c.userId === user.id || c.userId._id === user.id)
+                .filter(c => {
+                    if (!c.userId) return false;
+                    if (typeof c.userId === 'string') {
+                        return c.userId === user.id;
+                    }
+                    return c.userId._id === user.id;
+                })
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             const ids = new Set(filtered.map(c => c._id));
@@ -71,23 +76,41 @@ const HomePage = () => {
         }
     };
     if (user) fetchUserComplaints();
-  }, [user.id, navigate]);
+  }, [user, navigate]);
 
-  // Socket listener
   useEffect(() => {
     if (!user) return;
 
     const socket = io('http://localhost:5000');
     
     socket.on('newMessage', (message) => {
-        // Check if message belongs to one of user's complaints and is NOT from user
         if (userComplaintIdsRef.current.has(message.complaintId) && message.name !== user.name) {
             setNotifications(prev => [message, ...prev]);
         }
     });
 
+    socket.on('complaintUpdated', (updatedComplaint) => {
+        const belongsToUser = (() => {
+            if (!updatedComplaint.userId) return false;
+            if (typeof updatedComplaint.userId === 'string') {
+                return updatedComplaint.userId === user.id;
+            }
+            return updatedComplaint.userId._id === user.id;
+        })();
+
+        if (!belongsToUser) return;
+
+        setUserComplaints(prev => {
+            const exists = prev.some(c => c._id === updatedComplaint._id);
+            if (!exists) {
+                return [updatedComplaint, ...prev];
+            }
+            return prev.map(c => c._id === updatedComplaint._id ? { ...c, ...updatedComplaint } : c);
+        });
+    });
+
     return () => socket.disconnect();
-  }, [user.id, user.name]);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {

@@ -32,20 +32,16 @@ const Status = ({ user, targetComplaintId }) => {
     messageDialogRef.current = messageDialog;
   }, [messageDialog]);
 
-  // Socket listener for real-time updates
   useEffect(() => {
     if (!user) return;
 
     const socket = io('http://localhost:5000');
     
     socket.on('newMessage', (message) => {
-        // If the message is NOT from me
         if (message.name !== user.name) {
-            // Check if this message belongs to one of my complaints
             const isMyComplaint = complaintsRef.current.some(c => c._id === message.complaintId);
             if (!isMyComplaint) return;
 
-            // If chat for this complaint is NOT open, increment count
             const currentDialog = messageDialogRef.current;
             if (currentDialog.complaintId !== message.complaintId || !currentDialog.open) {
                 setUnreadCounts(prev => ({
@@ -53,7 +49,6 @@ const Status = ({ user, targetComplaintId }) => {
                     [message.complaintId]: (prev[message.complaintId] || 0) + 1
                 }));
             } else {
-                // If chat IS open, append message and mark as read
                 setMessageDialog(prev => ({
                     ...prev,
                     messages: [...prev.messages, message]
@@ -67,8 +62,28 @@ const Status = ({ user, targetComplaintId }) => {
         }
     });
 
+    socket.on('complaintUpdated', (updatedComplaint) => {
+        const belongsToUser = (() => {
+            if (!updatedComplaint.userId) return false;
+            if (typeof updatedComplaint.userId === 'string') {
+                return updatedComplaint.userId === user.id;
+            }
+            return updatedComplaint.userId._id === user.id;
+        })();
+
+        if (!belongsToUser) return;
+
+        setComplaints(prev => {
+            const exists = prev.some(c => c._id === updatedComplaint._id);
+            if (!exists) {
+                return [updatedComplaint, ...prev];
+            }
+            return prev.map(c => c._id === updatedComplaint._id ? { ...c, ...updatedComplaint } : c);
+        });
+    });
+
     return () => socket.disconnect();
-  }, [user.id, user.name]);
+  }, [user]);
 
   // Scroll to target complaint instead of auto-opening chat
   useEffect(() => {
@@ -171,9 +186,14 @@ const Status = ({ user, targetComplaintId }) => {
             headers: { Authorization: `Bearer ${token}` }
         });
         
-        // Filter complaints for the current user and sort by recent
         const userComplaints = response.data
-            .filter(c => c.userId === user.id || c.userId._id === user.id)
+            .filter(c => {
+                if (!c.userId) return false;
+                if (typeof c.userId === 'string') {
+                    return c.userId === user.id;
+                }
+                return c.userId._id === user.id;
+            })
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         try {
             const assignsRes = await axios.get('http://localhost:5000/api/assigned', {
@@ -224,7 +244,7 @@ const Status = ({ user, targetComplaintId }) => {
       }
     };
     fetchComplaints();
-  }, [user.id, navigate]);
+  }, [user, navigate]);
 
   // Fetch unread counts on mount
   useEffect(() => {

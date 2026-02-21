@@ -235,7 +235,13 @@ app.post('/api/assigned', auth, async (req, res) => {
         }
         const newAssignment = new Assigned({ complaintId, agentId, agentName });
         const savedAssignment = await newAssignment.save();
+
         await Complaint.findByIdAndUpdate(complaintId, { status: 'Assigned' });
+
+        const updatedComplaint = await Complaint.findById(complaintId);
+        const ioInstance = req.app.get('io');
+        ioInstance.emit('complaintUpdated', updatedComplaint);
+
         res.status(201).json(savedAssignment);
     } catch (err) {
         if (err.code === 11000) {
